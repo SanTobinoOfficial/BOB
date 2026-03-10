@@ -1,8 +1,8 @@
-# Bob Makro v1.3 — Instrukcja użytkownika
+# BOB v1.3 — Instrukcja użytkownika
 
-## Czym jest Bob Makro?
+## Czym jest BOB?
 
-Bob Makro to narzędzie do **testowania systemów anti-cheat** w grze.
+BOB to narzędzie do **testowania systemów anti-cheat** w grze.
 Składa się z 6 niezależnych modułów symulujących automatyczne akcje gracza —
 używane wyłącznie do weryfikacji skuteczności zabezpieczeń.
 
@@ -18,7 +18,7 @@ używane wyłącznie do weryfikacji skuteczności zabezpieczeń.
 
 ## Pierwsze uruchomienie
 
-1. Uruchom plik `SlapBattlesMultiMacro.ahk`
+1. Uruchom plik `BOB.ahk`
 2. Przy pierwszym uruchomieniu pojawi się okno z prośbą o klucz licencyjny
 3. Wpisz swój klucz (format: `XXXX-XXXX-XXXX-XXXX`)
 4. Makro wysyła Twój HWID do administratora — poczekaj na aktywację
@@ -39,7 +39,7 @@ używane wyłącznie do weryfikacji skuteczności zabezpieczeń.
 
 ## Moduły
 
-### 1. 🌀 Bob Makro — Portal
+### 1. 🌀 BOB — Portal
 Automatycznie klika portal, wykrywa kolory baz (niebieska/czerwona),
 wykonuje sekwencję ruchu i resetu postaci.
 
@@ -159,7 +159,7 @@ wysyłać statystyki na wybrany kanał. Wiadomości zawierają:
 ## Historia i dane łączne
 
 Przycisk **📋 Historia** otwiera log sesji. Każda zakończona sesja (Stop lub F8)
-jest zapisywana do pliku tekstowego w `%AppData%\SBMM\`.
+jest zapisywana do pliku tekstowego w `%AppData%\BOB\`.
 
 Dane łączne (np. łączna liczba kliknięć od początku) są zachowywane między sesjami.
 
@@ -168,11 +168,11 @@ Dane łączne (np. łączna liczba kliknięć od początku) są zachowywane mię
 ## Pliki konfiguracyjne
 
 Wszystkie ustawienia zapisywane są automatycznie do plików INI w:
-`%AppData%\SBMM\`
+`%AppData%\BOB\`
 
 | Plik | Moduł |
 |------|-------|
-| `portal_config.ini` | Bob Makro (Portal) |
+| `portal_config.ini` | BOB (Portal) |
 | `trap_config.ini` | Trap / Brick Master |
 | `obby_config.ini` | Obby Mastery |
 | `replica_config.ini` | Replica Bob |

@@ -1,8 +1,8 @@
-# Bob Makro v1.3 — Dokumentacja developerska
+# BOB v1.3 — Dokumentacja developerska
 
 ## Architektura ogólna
 
-Plik: `SlapBattlesMultiMacro.ahk` (~3300 linii), AutoHotkey v2.0
+Plik: `BOB.ahk` (~3300 linii), AutoHotkey v2.0
 
 Makro działa jako **single-threaded event loop** AHK z timerami i hotkeys.
 Jeden plik, jedno okno GUI naraz, jeden aktywny moduł (`activeModule`).
@@ -25,7 +25,7 @@ Startup
 
 | Zmienna | Typ | Opis |
 |---------|-----|------|
-| `APP_NAME` | String | Nazwa aplikacji: `"Bob Makro"` |
+| `APP_NAME` | String | Nazwa aplikacji: `"BOB"` |
 | `APP_VERSION` | String | Wersja: `"v1.3"` |
 | `activeModule` | String | Aktualnie wybrany moduł: `"portal"` / `"trap"` / `"obby"` / `"replica"` / `"manualbob"` / `"critglove"` |
 | `running` | Boolean | Czy makro jest uruchomione |
@@ -33,12 +33,12 @@ Startup
 | `sessionStart` | Integer | `A_TickCount` momentu startu — do liczenia czasu sesji |
 | `key` | String | Klucz licencyjny wczytany z `license.dat` |
 | `hwid` | String | HWID urządzenia (z rejestru Windows, MachineGuid) |
-| `licenseFile` | String | Ścieżka do `%AppData%\SBMM\license.dat` |
+| `licenseFile` | String | Ścieżka do `%AppData%\BOB\license.dat` |
 | `jsonURL` | String | URL do pliku `licenses.json` na GitHub |
 | `webhookHWID` | String | URL webhooka Discord do rejestracji HWID |
 | `debugCode` | String | 8-znakowy kod PIN (format `XXXX-XXXX`) do sekcji debugowania |
-| `debugCodeFile` | String | Ścieżka do `%AppData%\SBMM\debug_code.dat` |
-| `sentInfoFile` | String | Ścieżka do `%AppData%\SBMM\sent_info.dat` — flaga jednorazowego wysłania HWID |
+| `debugCodeFile` | String | Ścieżka do `%AppData%\BOB\debug_code.dat` |
+| `sentInfoFile` | String | Ścieżka do `%AppData%\BOB\sent_info.dat` — flaga jednorazowego wysłania HWID |
 | `gui1` | Gui | Aktualnie widoczne okno modułu |
 | `statusText` | GuiCtrl | Kontrolka statusu (DZIAŁA/ZATRZYMANE/PAUZA) |
 | `gameText` | GuiCtrl | Kontrolka stanu gry (✓/✗) |
@@ -49,9 +49,9 @@ Startup
 
 | Zmienna | Domyślna | Opis |
 |---------|----------|------|
-| `P_IniFile` | `%AppData%\SBMM\portal_config.ini` | Plik konfiguracji |
-| `P_HistFile` | `%AppData%\SBMM\portal_historia.txt` | Log historii sesji |
-| `P_TotalFile` | `%AppData%\SBMM\portal_total.dat` | Plik z łączną liczbą pętli |
+| `P_IniFile` | `%AppData%\BOB\portal_config.ini` | Plik konfiguracji |
+| `P_HistFile` | `%AppData%\BOB\portal_historia.txt` | Log historii sesji |
+| `P_TotalFile` | `%AppData%\BOB\portal_total.dat` | Plik z łączną liczbą pętli |
 | `P_webhook` | `""` | URL webhooka statystyk |
 | `P_whCooldown` | `3000` | Minimalny czas (ms) między wysłaniami webhooka |
 | `P_lastWH` | `0` | `A_TickCount` ostatniego wysłania webhooka |
@@ -105,9 +105,9 @@ Startup
 
 | Zmienna | Domyślna | Opis |
 |---------|----------|------|
-| `T_IniFile` | `%AppData%\SBMM\trap_config.ini` | Plik konfiguracji |
-| `T_HistFile` | `%AppData%\SBMM\trap_historia.txt` | Log historii |
-| `T_TotalFile` | `%AppData%\SBMM\trap_total.dat` | Łączna liczba cegieł |
+| `T_IniFile` | `%AppData%\BOB\trap_config.ini` | Plik konfiguracji |
+| `T_HistFile` | `%AppData%\BOB\trap_historia.txt` | Log historii |
+| `T_TotalFile` | `%AppData%\BOB\trap_total.dat` | Łączna liczba cegieł |
 | `T_webhook` | `""` | URL webhooka |
 | `T_whCooldown` | `5000` | Cooldown webhooka (ms) |
 | `T_lastWH` | `0` | Timestamp ostatniego webhooka |
@@ -136,9 +136,9 @@ Startup
 
 | Zmienna | Domyślna | Opis |
 |---------|----------|------|
-| `O_IniFile` | `%AppData%\SBMM\obby_config.ini` | Plik konfiguracji |
-| `O_HistFile` | `%AppData%\SBMM\obby_historia.txt` | Log historii |
-| `O_TotalFile` | `%AppData%\SBMM\obby_total.dat` | Łączna liczba części |
+| `O_IniFile` | `%AppData%\BOB\obby_config.ini` | Plik konfiguracji |
+| `O_HistFile` | `%AppData%\BOB\obby_historia.txt` | Log historii |
+| `O_TotalFile` | `%AppData%\BOB\obby_total.dat` | Łączna liczba części |
 | `O_webhook` | `""` | URL webhooka |
 | `O_whCooldown` | `5000` | Cooldown webhooka (ms) |
 | `O_lastWH` | `0` | Timestamp ostatniego webhooka |
@@ -168,9 +168,9 @@ Startup
 
 | Zmienna | Domyślna | Opis |
 |---------|----------|------|
-| `R_IniFile` | `%AppData%\SBMM\replica_config.ini` | Plik konfiguracji |
-| `R_HistFile` | `%AppData%\SBMM\replica_historia.txt` | Log historii |
-| `R_TotalFile` | `%AppData%\SBMM\replica_total.dat` | Łączna liczba kliknięć |
+| `R_IniFile` | `%AppData%\BOB\replica_config.ini` | Plik konfiguracji |
+| `R_HistFile` | `%AppData%\BOB\replica_historia.txt` | Log historii |
+| `R_TotalFile` | `%AppData%\BOB\replica_total.dat` | Łączna liczba kliknięć |
 | `R_webhook` | `""` | URL webhooka |
 | `R_whCooldown` | `10000` | Cooldown webhooka (ms) |
 | `R_lastWH` | `0` | Timestamp ostatniego webhooka |
@@ -200,9 +200,9 @@ Startup
 
 | Zmienna | Domyślna | Opis |
 |---------|----------|------|
-| `MB_IniFile` | `%AppData%\SBMM\manualbob_config.ini` | Plik konfiguracji |
-| `MB_HistFile` | `%AppData%\SBMM\manualbob_historia.txt` | Log historii |
-| `MB_TotalFile` | `%AppData%\SBMM\manualbob_total.dat` | Łączna liczba kliknięć |
+| `MB_IniFile` | `%AppData%\BOB\manualbob_config.ini` | Plik konfiguracji |
+| `MB_HistFile` | `%AppData%\BOB\manualbob_historia.txt` | Log historii |
+| `MB_TotalFile` | `%AppData%\BOB\manualbob_total.dat` | Łączna liczba kliknięć |
 | `MB_webhook` | `""` | URL webhooka |
 | `MB_whCooldown` | `5000` | Cooldown webhooka (ms) |
 | `MB_lastWH` | `0` | Timestamp ostatniego webhooka |
@@ -234,9 +234,9 @@ Startup
 
 | Zmienna | Domyślna | Opis |
 |---------|----------|------|
-| `CG_IniFile` | `%AppData%\SBMM\critglove_config.ini` | Plik konfiguracji |
-| `CG_HistFile` | `%AppData%\SBMM\critglove_historia.txt` | Log historii |
-| `CG_TotalFile` | `%AppData%\SBMM\critglove_total.dat` | Łączna liczba kliknięć |
+| `CG_IniFile` | `%AppData%\BOB\critglove_config.ini` | Plik konfiguracji |
+| `CG_HistFile` | `%AppData%\BOB\critglove_historia.txt` | Log historii |
+| `CG_TotalFile` | `%AppData%\BOB\critglove_total.dat` | Łączna liczba kliknięć |
 | `CG_webhook` | `""` | URL webhooka |
 | `CG_whCooldown` | `5000` | Cooldown webhooka (ms) |
 | `CG_lastWH` | `0` | Timestamp ostatniego webhooka |
@@ -425,7 +425,7 @@ Wyłącza hotkeys myszy i zatrzymuje InputHook. Zawsze bezpieczne (try).
 ```
 
 ### `sentInfoFile` — mechanizm jednorazowego wysłania
-Plik `%AppData%\SBMM\sent_info.dat` tworzy się po pierwszym wysłaniu HWID.
+Plik `%AppData%\BOB\sent_info.dat` tworzy się po pierwszym wysłaniu HWID.
 Jego istnienie blokuje ponowne wysyłanie przy każdym starcie.
 Usunięcie pliku → webhook zostanie wysłany przy kolejnym uruchomieniu.
 
