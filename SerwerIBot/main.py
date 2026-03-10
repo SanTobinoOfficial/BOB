@@ -63,7 +63,14 @@ def load_licenses():
 def save_licenses(data):
     with open(JSON_FILE, "w") as f:
         json.dump(data, f, indent=4)
-    update_github_file(data)
+
+
+async def save_licenses_async(data):
+    """Zapisuje lokalnie i pushuje do GitHub bez blokowania event loop."""
+    loop = asyncio.get_event_loop()
+    with open(JSON_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+    await loop.run_in_executor(None, update_github_file, data)
 
 
 def update_github_file(data):
@@ -129,7 +136,7 @@ async def generate(ctx):
     data = load_licenses()
     key  = generate_key()
     data[key] = {"hwid": "", "banned": False, "note": "", "debug_code": ""}
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("GENERATE", f"Klucz {key} wygenerowany przez {ctx.author}")
     await ctx.send(f"Nowy klucz: `{key}`")
 
@@ -140,7 +147,7 @@ async def ban(ctx, key):
     if key not in data:
         return await ctx.send("Nie znaleziono klucza")
     data[key]["banned"] = True
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("BAN", f"Klucz {key} zbanowany przez {ctx.author}")
     await ctx.send(f"Klucz `{key}` zbanowany")
 
@@ -151,7 +158,7 @@ async def unban(ctx, key):
     if key not in data:
         return await ctx.send("Nie znaleziono klucza")
     data[key]["banned"] = False
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("UNBAN", f"Klucz {key} odbanowany przez {ctx.author}")
     await ctx.send(f"Klucz `{key}` odbanowany")
 
@@ -162,7 +169,7 @@ async def reset(ctx, key):
     if key not in data:
         return await ctx.send("Nie znaleziono klucza")
     data[key]["hwid"] = ""
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("RESET", f"HWID klucza {key} zresetowany przez {ctx.author}")
     await ctx.send(f"HWID klucza `{key}` zresetowany")
 
@@ -173,7 +180,7 @@ async def assign(ctx, key, hwid):
     if key not in data:
         return await ctx.send("Nie znaleziono klucza")
     data[key]["hwid"] = hwid
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("ASSIGN", f"HWID {hwid[:12]}... przypisany do {key}")
     await ctx.send(f"HWID przypisany do klucza `{key}`")
 
@@ -184,7 +191,7 @@ async def note(ctx, key, *, text):
     if key not in data:
         return await ctx.send("Nie znaleziono klucza")
     data[key]["note"] = text
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("NOTE", f"Notatka klucza {key}: {text[:40]}")
     await ctx.send(f"Notatka klucza `{key}`:\n> {text}")
 
@@ -195,7 +202,7 @@ async def clearnote(ctx, key):
     if key not in data:
         return await ctx.send("Nie znaleziono klucza")
     data[key]["note"] = ""
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("NOTE", f"Notatka klucza {key} wyczyszczona przez {ctx.author}")
     await ctx.send(f"Notatka klucza `{key}` wyczyszczona")
 
@@ -252,7 +259,7 @@ async def delete(ctx, key):
     if key not in data:
         return await ctx.send("Nie znaleziono klucza")
     del data[key]
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("DELETE", f"Klucz {key} usuniety przez {ctx.author}")
     await ctx.send(f"Klucz `{key}` usuniety")
 
@@ -304,7 +311,7 @@ async def on_message(message):
         changed = True
 
     if changed:
-        save_licenses(data)
+        await save_licenses_async(data)
         print(f"[AUTO] {key}: {', '.join(notes)}")
 
 
@@ -312,7 +319,7 @@ async def on_message(message):
 
 async def handle_root(request):
     try:
-        with open("templates/panel.html", "r") as f:
+        with open("panel.html", "r", encoding="utf-8") as f:
             return web.Response(text=f.read(), content_type="text/html")
     except Exception as e:
         return web.Response(text=f"Error: {e}", status=500)
@@ -350,7 +357,7 @@ async def handle_api_generate(request):
     data = load_licenses()
     key  = generate_key()
     data[key] = {"hwid": "", "banned": False, "note": "", "debug_code": ""}
-    save_licenses(data)
+    await save_licenses_async(data)
     log_activity("GENERATE", f"Klucz {key} wygenerowany z panelu")
     return web.json_response({"key": key})
 
@@ -386,7 +393,7 @@ async def handle_api_action(request):
         else:
             return web.json_response({"error": "Nieznana akcja"}, status=400)
 
-        save_licenses(data)
+        await save_licenses_async(data)
         return web.json_response({"ok": True})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
