@@ -126,6 +126,40 @@ if !DirExist(A_AppData "\BOB")
     DirCreate(A_AppData "\BOB")
 
 ; ══════════════════════════════════════════════
+; WARUNKI UŻYTKOWANIA (ToS) — akceptacja raz
+; ══════════════════════════════════════════════
+global tosFile := A_AppData "\BOB\tos_accepted.dat"
+if !FileExist(tosFile) {
+    tosText := "WARUNKI UŻYTKOWANIA — BOB Makro`n"
+        . "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n`n"
+        . "1. DOZWOLONE UŻYCIE`n"
+        . "   Makro służy wyłącznie do automatyzacji akcji`n"
+        . "   w grze Slap Battles (Roblox) na własnym koncie.`n`n"
+        . "2. ZAKAZ DALSZEJ DYSTRYBUCJI`n"
+        . "   Nie wolno udostępniać, odsprzedawać ani`n"
+        . "   dystrybuować tego oprogramowania bez zgody autora.`n`n"
+        . "3. ODPOWIEDZIALNOŚĆ`n"
+        . "   Użytkownik korzysta z makra na własne ryzyko.`n"
+        . "   Autor nie ponosi odpowiedzialności za ewentualne`n"
+        . "   konsekwencje w grze (ostrzeżenia, bany itp.).`n`n"
+        . "4. ZBIERANIE HWID`n"
+        . "   Unikalny identyfikator sprzętu (HWID) jest wysyłany`n"
+        . "   do administratora wyłącznie w celu weryfikacji`n"
+        . "   licencji. Dane nie są udostępniane osobom trzecim.`n`n"
+        . "5. AKTUALIZACJE`n"
+        . "   Autor zastrzega prawo do aktualizacji warunków.`n"
+        . "   Nowa wersja makra może wymagać ponownej akceptacji.`n`n"
+        . "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+        . "Klikając OK akceptujesz powyższe warunki użytkowania."
+    result := MsgBox(tosText, APP_NAME " — Warunki użytkowania", "OKCancel Icon! 262144")
+    if (result != "OK") {
+        MsgBox "Musisz zaakceptować warunki, aby używać makra.", APP_NAME, 16
+        ExitApp
+    }
+    FileAppend "accepted", tosFile
+}
+
+; ══════════════════════════════════════════════
 ; POMOCNICZE
 ; ══════════════════════════════════════════════
 SafeNum(val, def) {
@@ -737,7 +771,7 @@ CheckGame() {
         : (activeModule = "critglove") ? CG_IniFile
         : T_IniFile
     ap  := SafeNum(IniRead(ini, "Makro", "AutoPauza", "1"), 1)
-    ok  := WinExist("ahk_exe test.exe") ? true : false
+    ok  := WinExist("ahk_exe RobloxPlayerBeta.exe") ? true : false
     try {
         gameText.Text := ok ? "Gra ✓" : "Gra ✗"
         gameText.SetFont(ok ? "c4ADE80" : "cF87171")
@@ -747,8 +781,10 @@ CheckGame() {
     if (running && !paused && !ok) {
         paused := true
         UpdateStatus("PAUZA", "FBBF24")
-        SetTimer(PortalLoop, 0)
-        SetTimer(TrapLoop,   0)
+        SetTimer(PortalLoop,  0)
+        SetTimer(TrapLoop,    0)
+        SetTimer(ObbyLoop,    0)
+        SetTimer(ReplicaLoop, 0)
         try Hotkey MB_hotkey, ManualBobTrigger, "Off"
         try Hotkey CG_hotkey, CritGloveTrigger, "Off"
     } else if (running && paused && ok) {
@@ -1665,9 +1701,9 @@ PortalLoop() {
     ;   Czerwony:  R > 160, B < 70, G < 100
 
     ; Rozmiar okna gry (lub cały ekran jako fallback)
-    gameHwnd := WinExist("ahk_exe test.exe")
+    gameHwnd := WinExist("ahk_exe RobloxPlayerBeta.exe")
     if gameHwnd {
-        WinGetPos(&rX, &rY, &rW, &rH, "ahk_exe test.exe")
+        WinGetPos(&rX, &rY, &rW, &rH, "ahk_exe RobloxPlayerBeta.exe")
     } else {
         rX := 0, rY := 0
         rW := A_ScreenWidth
@@ -2183,6 +2219,7 @@ ObbyLoop() {
         if dzwiek {
             gsdO := SafeNum(IniRead(O_IniFile, "Zaawansowane", "GoalSoundDelay", "300"), 300)
             Loop 5 {
+                SoundPlay "*16"
                 Sleep gsdO
             }
         }
