@@ -2,9 +2,9 @@
 
 ## Czym jest Bob Makro?
 
-Bob Makro to narzędzie do automatyzacji akcji w grze **Slap Battles** (Roblox).
-Składa się z 6 niezależnych modułów, które pomagają zdobywać przedmioty, farmić
-zasoby i wykonywać powtarzalne czynności.
+Bob Makro to narzędzie do **testowania systemów anti-cheat** w grze.
+Składa się z 6 niezależnych modułów symulujących automatyczne akcje gracza —
+używane wyłącznie do weryfikacji skuteczności zabezpieczeń.
 
 ---
 
@@ -12,7 +12,7 @@ zasoby i wykonywać powtarzalne czynności.
 
 - Windows 10 / 11
 - AutoHotkey v2.0 (pobierz z https://www.autohotkey.com)
-- Roblox uruchomiony w trybie pełnoekranowym lub w oknie
+- Gra uruchomiona w trybie pełnoekranowym lub w oknie
 
 ---
 
@@ -44,7 +44,7 @@ Automatycznie klika portal, wykrywa kolory baz (niebieska/czerwona),
 wykonuje sekwencję ruchu i resetu postaci.
 
 **Jak używać:**
-- Ustaw postać przy portalu w Slap Battles
+- Ustaw postać przy portalu w grze
 - Skonfiguruj współrzędne portalu w Ustawieniach Zaawansowanych
 - Naciśnij Start lub F6
 
@@ -57,7 +57,7 @@ Automatycznie klika cegłę co ustalony interwał (domyślnie co 5 sekund).
 Zlicza cegły aż do osiągnięcia celu (domyślnie 1000).
 
 **Jak używać:**
-- Wejdź na mapę Trap w Slap Battles
+- Wejdź na testową mapę Trap w grze
 - Ustaw cel w Ustawieniach
 - Naciśnij Start lub F6
 
@@ -70,7 +70,7 @@ Automatycznie kładzie części Obby co ustalony interwał (domyślnie co 3 seku
 Cel: 2000 części (Quest 3 Mastery).
 
 **Jak używać:**
-- Wejdź na mapę Obby w Slap Battles
+- Wejdź na testową mapę Obby w grze
 - Naciśnij Start lub F6
 
 **Statystyki:** Części sesji, Części łącznie, Postęp %, Czas, Części/h, ETA
@@ -82,7 +82,7 @@ Automatycznie klika E co 14 sekund (cooldown repliki Boba).
 Szansa na uzyskanie Boba: 1/7500.
 
 **Jak używać:**
-- Wyekwipuj Replikę Boba w Slap Battles
+- Wyekwipuj Replikę Boba w grze
 - Naciśnij Start lub F6 — makro klika od razu
 
 **Statystyki:** Kliki sesji, Boby, Szacowane Boby, Czas, Kliki/h
@@ -128,7 +128,7 @@ w oknie modułu.
 ### Sekcje ustawień
 
 **OPCJE**
-- Auto-pauza gdy Roblox nieaktywny — zatrzymuje makro jeśli Roblox nie jest w tle
+- Auto-pauza gdy gra nieaktywna — zatrzymuje makro jeśli gra nie jest aktywna w tle
 - Dźwięk przy znalezieniu Boba — sygnał dźwiękowy (3 piknięcia)
 
 **ZAAWANSOWANE**
@@ -191,7 +191,7 @@ Wszystkie ustawienia zapisywane są automatycznie do plików INI w:
 - Uruchom plik `.ahk` prawym przyciskiem → "Run as administrator"
 
 **Makro się zatrzymuje samo**
-- Włączona opcja "Auto-pauza" — Roblox musi być aktywny w tle
+- Włączona opcja "Auto-pauza" — gra musi być aktywna w tle
 - Wyłącz Auto-pauzę w Ustawieniach jeśli grasz na innym oknie
 
 **Nieprawidłowy klucz / HWID niezaakceptowany**
