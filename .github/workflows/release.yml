@@ -75,10 +75,18 @@ jobs:
       - name: Zainstaluj AutoHotkey v2
         shell: pwsh
         run: |
-          $url = "https://www.autohotkey.com/download/ahk-v2.exe"
-          Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\ahk-setup.exe"
+          # Pobierz najnowszy installer AHK v2 z GitHub Releases (omija Cloudflare)
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/AutoHotkey/AutoHotkey/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -like "*setup*" -and $_.name -notlike "*arm*" } | Select-Object -First 1
+          if (-not $asset) {
+            # Fallback: hardcoded stabilna wersja
+            $asset = @{ browser_download_url = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.19/AutoHotkey_2.0.19_setup.exe" }
+          }
+          $url = $asset.browser_download_url
+          Write-Host "Pobieranie AHK z: $url"
+          Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\ahk-setup.exe" -UseBasicParsing
           Start-Process -FilePath "$env:TEMP\ahk-setup.exe" -ArgumentList "/S" -Wait
-          Start-Sleep -Seconds 3
+          Start-Sleep -Seconds 5
 
       # 5. Skompiluj SlapBattlesMultiMacro.ahk → .exe
       - name: Kompiluj makro
