@@ -65,6 +65,27 @@ def save_licenses(data):
         json.dump(data, f, indent=4)
 
 
+def load_from_gist():
+    """Pobiera licenses.json z Gist przy starcie bota."""
+    if not all([GIST_TOKEN, GIST_ID]):
+        print("Gist config missing, loading from local file.")
+        return
+    url     = f"https://api.github.com/gists/{GIST_ID}"
+    headers = {
+        "Authorization": f"token {GIST_TOKEN}",
+        "Accept":        "application/vnd.github.v3+json",
+    }
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        r.raise_for_status()
+        content = r.json()["files"]["licenses.json"]["content"]
+        data = json.loads(content)
+        save_licenses(data)
+        print(f"Gist sync: załadowano {len(data)} kluczy.")
+    except Exception as e:
+        print(f"Błąd ładowania z Gist: {e} — używam lokalnego pliku.")
+
+
 async def save_licenses_async(data):
     """Zapisuje lokalnie i pushuje do Gist bez blokowania event loop."""
     save_licenses(data)
@@ -424,6 +445,8 @@ async def start_webserver():
 @bot.event
 async def on_ready():
     print(f"Bot online: {bot.user}")
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, load_from_gist)
     await start_webserver()
 
 
