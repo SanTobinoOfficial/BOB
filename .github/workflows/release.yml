@@ -1,8 +1,3 @@
-# ============================================================================
-#  release.yml  –  Kompilacja SlapBattlesMultiMacro.ahk → .exe + GitHub Release
-#  Wyzwalacz: nowy tag v*.*.* LUB ręczne uruchomienie z GitHub UI
-# ============================================================================
-
 name: Build & Release
 
 on:
@@ -30,20 +25,18 @@ on:
 
 jobs:
   build:
-    name: Kompilacja AHK → EXE i tworzenie release
+    name: Kompilacja AHK i tworzenie release
     runs-on: windows-latest
     permissions:
       contents: write
 
     steps:
-      # ── 1. Checkout ────────────────────────────────────────────────────────
-      - name: Checkout repozytorium
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ── 2. Ustal wersję ────────────────────────────────────────────────────
-      - name: Ustal wersję
+      - name: Ustal wersje
         id: version
         shell: pwsh
         run: |
@@ -57,8 +50,7 @@ jobs:
             echo "IS_PRERELEASE=false" >> $env:GITHUB_OUTPUT
           }
 
-      # ── 3. Utwórz tag (tylko przy manual dispatch) ─────────────────────────
-      - name: Utwórz tag (manual dispatch)
+      - name: Utworz tag (manual dispatch)
         if: github.event_name == 'workflow_dispatch'
         shell: pwsh
         env:
@@ -71,18 +63,16 @@ jobs:
           if (-not $existing) {
             git tag $ver
             git push origin $ver
-            Write-Host "Tag $ver utworzony i wypchnięty."
+            Write-Host "Tag $ver utworzony."
           } else {
-            Write-Host "Tag $ver już istnieje — pomijam."
+            Write-Host "Tag $ver juz istnieje."
           }
 
-      # ── 4. Zainstaluj AutoHotkey v2 przez Chocolatey ───────────────────────
       - name: Zainstaluj AutoHotkey v2
         shell: cmd
         run: choco install autohotkey --version=2.0.19 -y --no-progress
 
-      # ── 5. Skompiluj makro AHK → EXE ──────────────────────────────────────
-      - name: Kompiluj SlapBattlesMultiMacro.ahk
+      - name: Kompiluj makro
         shell: pwsh
         run: |
           $compiler = @(
@@ -101,53 +91,44 @@ jobs:
           & $compiler /in "SlapBattlesMultiMacro.ahk" /out "SlapBattlesMultiMacro.exe" /compress 2
 
           if (!(Test-Path "SlapBattlesMultiMacro.exe")) {
-            Write-Error "Kompilacja nie powiodła się!"
+            Write-Error "Kompilacja nie powiodla sie!"
             exit 1
           }
-          Write-Host "OK — SlapBattlesMultiMacro.exe gotowy."
+          Write-Host "OK - SlapBattlesMultiMacro.exe gotowy."
 
-      # ── 6. Przygotuj notatki release ───────────────────────────────────────
       - name: Przygotuj notatki release
         shell: pwsh
         run: |
           $ver = "${{ steps.version.outputs.VERSION }}"
           $custom = "${{ github.event.inputs.release_notes }}"
           if ($custom) {
-            $body = $custom
+            $custom | Out-File -FilePath "release_notes.md" -Encoding utf8
           } else {
-            $body = @"
-## Slap Battles Multi Macro $ver
-
-### Instalacja
-1. Pobierz ``SlapBattlesMultiMacro.exe``
-2. Uruchom i zaakceptuj Warunki Użytkowania
-3. Wpisz klucz licencyjny (otrzymasz od administratora)
-4. Poczekaj na aktywację HWID
-5. Uruchom ponownie i wybierz moduł
-
-### Wymagania
-- Windows 10 / 11
-- Roblox uruchomiony przed startem makra
-
-> Plik exe zawiera wbudowane środowisko AutoHotkey — nie wymaga instalacji AHK.
-"@
+            $body = "## Slap Battles Multi Macro $ver`n`n"
+            $body += "### Instalacja`n"
+            $body += "1. Pobierz ``SlapBattlesMultiMacro.exe```n"
+            $body += "2. Uruchom i zaakceptuj Warunki Uzytkowania`n"
+            $body += "3. Wpisz klucz licencyjny (otrzymasz od administratora)`n"
+            $body += "4. Poczekaj na aktywacje HWID`n"
+            $body += "5. Uruchom ponownie i wybierz modul`n`n"
+            $body += "### Wymagania`n"
+            $body += "- Windows 10 / 11`n"
+            $body += "- Roblox uruchomiony przed startem makra`n`n"
+            $body += "> Plik exe zawiera wbudowane srodowisko AutoHotkey - nie wymaga instalacji AHK."
+            $body | Out-File -FilePath "release_notes.md" -Encoding utf8
           }
-          $body | Out-File -FilePath "release_notes.md" -Encoding utf8
 
-      # ── 7. Utwórz Release i wgraj exe ─────────────────────────────────────
-      - name: Utwórz Release i wgraj SlapBattlesMultiMacro.exe
+      - name: Utworz Release i wgraj exe
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
           $ver = "${{ steps.version.outputs.VERSION }}"
           $pre = "${{ steps.version.outputs.IS_PRERELEASE }}"
-          $preFlag = if ($pre -eq "true") { "--prerelease" } else { "" }
 
-          # Usuń istniejący release jeśli jest (żeby nie duplikować)
           gh release delete $ver --yes 2>$null
 
-          if ($preFlag) {
+          if ($pre -eq "true") {
             gh release create $ver "SlapBattlesMultiMacro.exe" `
               --title "Slap Battles Multi Macro $ver" `
               --notes-file "release_notes.md" `
