@@ -69,20 +69,23 @@ jobs:
           }
 
       - name: Zainstaluj AutoHotkey v2
-        shell: cmd
-        run: choco install autohotkey --version=2.0.19 -y --no-progress
+        shell: pwsh
+        run: |
+          $url = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.19/AutoHotkey_v2.0.19_setup.exe"
+          Write-Host "Pobieranie AHK v2.0.19 z GitHub..."
+          Invoke-WebRequest -Uri $url -OutFile "ahk_setup.exe" -UseBasicParsing
+          Write-Host "Instalacja..."
+          Start-Process "ahk_setup.exe" -ArgumentList "/S" -Wait
+          Write-Host "Pliki po instalacji:"
+          Get-ChildItem "C:\Program Files\AutoHotkey\" -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object FullName
 
       - name: Kompiluj makro
         shell: pwsh
         run: |
           $compiler = Get-ChildItem "C:\Program Files\AutoHotkey\" -Recurse -Filter "Ahk2Exe.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $compiler) {
-            $compiler = Get-ChildItem "C:\ProgramData\chocolatey\" -Recurse -Filter "Ahk2Exe.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-          }
 
           if (-not $compiler) {
             Write-Error "Nie znaleziono Ahk2Exe.exe!"
-            Get-ChildItem "C:\Program Files\AutoHotkey\" -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object FullName
             exit 1
           }
 
