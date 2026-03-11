@@ -98,6 +98,8 @@ jobs:
         run: |
           $compiler = "C:\AHK2\Ahk2Exe.exe"
           $ahk = "C:\AHK2\AutoHotkey64.exe"
+          $src = (Resolve-Path "SlapBattlesMultiMacro.ahk").Path
+          $out = (Join-Path $PWD "SlapBattlesMultiMacro.exe")
 
           if (-not (Test-Path $compiler)) {
             Write-Error "Nie znaleziono Ahk2Exe.exe!"
@@ -105,18 +107,23 @@ jobs:
           }
 
           Write-Host "Kompilator: $compiler"
-          Write-Host "Interpreter: $ahk"
+          Write-Host "Zrodlo: $src"
+          Write-Host "Wyjscie: $out"
 
-          & $compiler /in "SlapBattlesMultiMacro.ahk" /out "SlapBattlesMultiMacro.exe" /ahk "$ahk"
-          Write-Host "Ahk2Exe exit code: $LASTEXITCODE"
+          $proc = Start-Process -FilePath $compiler `
+            -ArgumentList "/in `"$src`" /out `"$out`" /ahk `"$ahk`"" `
+            -NoNewWindow -Wait -PassThru
+          Write-Host "Ahk2Exe exit code: $($proc.ExitCode)"
 
-          if (!(Test-Path "SlapBattlesMultiMacro.exe")) {
+          if (!(Test-Path $out)) {
             Write-Host "Proba bez /ahk..."
-            & $compiler /in "SlapBattlesMultiMacro.ahk" /out "SlapBattlesMultiMacro.exe"
-            Write-Host "Ahk2Exe exit code (2): $LASTEXITCODE"
+            $proc2 = Start-Process -FilePath $compiler `
+              -ArgumentList "/in `"$src`" /out `"$out`"" `
+              -NoNewWindow -Wait -PassThru
+            Write-Host "Ahk2Exe exit code (2): $($proc2.ExitCode)"
           }
 
-          if (!(Test-Path "SlapBattlesMultiMacro.exe")) {
+          if (!(Test-Path $out)) {
             Write-Error "Kompilacja nie powiodla sie!"
             exit 1
           }
