@@ -12,7 +12,7 @@ global APP_NAME    := "Slap Battles Multi Macro"
 global APP_VERSION := "v1.4.0"
 
 global licenseFile := A_AppData "\SBMM\license.dat"
-global jsonURL     := "https://gist.githubusercontent.com/SanTobinoOfficial/REPLACE_WITH_GIST_ID/raw/licenses.json"
+global jsonURL     := "https://gist.githubusercontent.com/SanTobinoOfficial/4700f4452a52144b6e3922501b55dcf1/raw/licenses.json"
 global webhookHWID := ""
 
 global key  := ""
