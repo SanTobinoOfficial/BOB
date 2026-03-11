@@ -38,7 +38,7 @@ HWID jest wysyłany **jednorazowo** — tylko przy pierwszej aktywacji, gdy kluc
 
 ## 2. Jak pobierany jest HWID?
 
-HWID pobierany jest z systemu Windows za pomocą zapytania WMI (`Win32_ComputerSystemProduct.UUID`). Jest to unikalny identyfikator sprzętowy komputera, niezwiązany z kontem użytkownika Windows ani z kontem Roblox.
+HWID pobierany jest z rejestru systemu Windows: `HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid`. Jest to unikalny identyfikator przypisywany komputerowi podczas instalacji systemu Windows, niezwiązany z kontem użytkownika Windows ani z kontem Roblox.
 
 ---
 
