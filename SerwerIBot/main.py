@@ -16,8 +16,11 @@ GIST_TOKEN       = os.environ.get("GIST_TOKEN", "")
 GIST_ID          = os.environ.get("GIST_ID", "")
 ADMIN_CHANNEL_ID = int(os.environ.get("ADMIN_CHANNEL_ID", "0"))
 
+WEBHOOK_CATEGORY_NAME = "Webhooki"
+
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True          # wymagany do on_member_join (włącz w Dev Portal!)
 bot = commands.Bot(command_prefix='.', intents=intents)
 
 activity_log = []
@@ -422,6 +425,52 @@ async def start_webserver():
 async def on_ready():
     print(f"Bot online: {bot.user}")
     await start_webserver()
+
+
+# ── Auto-webhook przy dołączeniu do serwera ───────────────────────
+
+@bot.event
+async def on_member_join(member: discord.Member):
+    guild = member.guild
+
+    # Znajdź lub utwórz kategorię "Webhooki"
+    category = discord.utils.get(guild.categories, name=WEBHOOK_CATEGORY_NAME)
+    if category is None:
+        category = await guild.create_category(WEBHOOK_CATEGORY_NAME)
+
+    # Utwórz kanał  username_webhook  (discord wymaga małych liter / bez spacji)
+    safe_name = re.sub(r'[^a-z0-9_]', '', member.name.lower()) or f"user{member.id}"
+    channel_name = f"{safe_name}_webhook"
+
+    # Jeśli kanał już istnieje — nie twórz duplikatu
+    existing = discord.utils.get(guild.text_channels, name=channel_name, category=category)
+    if existing:
+        return
+
+    # Uprawnienia: tylko bot + administrator widzą kanał
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        guild.me:           discord.PermissionOverwrite(read_messages=True,
+                                                        send_messages=True,
+                                                        manage_webhooks=True,
+                                                        manage_messages=True),
+    }
+    channel = await guild.create_text_channel(channel_name,
+                                               category=category,
+                                               overwrites=overwrites,
+                                               topic=f"Webhook kanał użytkownika {member}")
+
+    # Utwórz webhook dla tego kanału
+    webhook = await channel.create_webhook(name=f"{member.name} — SBMM")
+
+    # Wyślij URL webhooka i przypnij wiadomość
+    msg = await channel.send(
+        f"**Webhook dla: {member.mention}**\n"
+        f"```\n{webhook.url}\n```\n"
+        f"Wklej ten URL w ustawieniach makra → Webhook → URL."
+    )
+    await msg.pin()
+    log_activity("WEBHOOK-CREATE", f"Kanał {channel_name} + webhook dla {member}")
 
 
 bot.run(TOKEN)
