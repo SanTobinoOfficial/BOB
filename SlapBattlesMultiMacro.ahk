@@ -455,13 +455,16 @@ InitDebugCode() {
 
 
 ; ══════════════════════════════════════════════
-; GLOBAL CONFIG (URL panelu)
+; GLOBAL CONFIG (URL panelu + webhook HWID)
 ; ══════════════════════════════════════════════
 LoadGlobalConfig() {
-    global globalIniFile, reportURL
-    if !FileExist(globalIniFile)
-        IniWrite "", globalIniFile, "Panel", "ReportURL"
-    reportURL := IniRead(globalIniFile, "Panel", "ReportURL", "")
+    global globalIniFile, reportURL, webhookHWID
+    if !FileExist(globalIniFile) {
+        IniWrite "", globalIniFile, "Panel",  "ReportURL"
+        IniWrite "", globalIniFile, "Global", "WebhookHWID"
+    }
+    reportURL   := IniRead(globalIniFile, "Panel",  "ReportURL",  "")
+    webhookHWID := IniRead(globalIniFile, "Global", "WebhookHWID", "")
 }
 LoadGlobalConfig()
 
@@ -1301,6 +1304,7 @@ SavePortalDebug(newJson, newWH, newWHCD, newBBmin, newBRmax, newRRmin, newRBmax,
     global jsonURL, webhookHWID, P_IniFile, P_webhook, P_whCooldown, P_BOB_DENOM, reportURL, globalIniFile
     jsonURL      := newJson
     webhookHWID  := newWH
+    IniWrite webhookHWID, globalIniFile, "Global", "WebhookHWID"
     P_whCooldown := SafeNum(newWHCD, 3000)
     P_BOB_DENOM  := SafeNum(newBobDenom, 7500)
     if (newRepURL != "") {
@@ -1646,6 +1650,7 @@ SaveTrapDebug(newJson, newWH, newRepURL := "") {
     global jsonURL, webhookHWID, reportURL, globalIniFile
     jsonURL     := newJson
     webhookHWID := newWH
+    IniWrite webhookHWID, globalIniFile, "Global", "WebhookHWID"
     if (newRepURL != "") {
         reportURL := RTrim(newRepURL, "/")
         IniWrite reportURL, globalIniFile, "Panel", "ReportURL"
@@ -2241,6 +2246,7 @@ SaveObbyDebug(newJson, newWH, newRepURL := "") {
     global jsonURL, webhookHWID, reportURL, globalIniFile
     jsonURL     := newJson
     webhookHWID := newWH
+    IniWrite webhookHWID, globalIniFile, "Global", "WebhookHWID"
     if (newRepURL != "") {
         reportURL := RTrim(newRepURL, "/")
         IniWrite reportURL, globalIniFile, "Panel", "ReportURL"
@@ -2665,6 +2671,7 @@ SaveReplicaDebug(newJson, newWH, newBobDenom, newRepURL := "") {
     global jsonURL, webhookHWID, R_IniFile, R_BOB_DENOM, reportURL, globalIniFile
     jsonURL     := newJson
     webhookHWID := newWH
+    IniWrite webhookHWID, globalIniFile, "Global", "WebhookHWID"
     R_BOB_DENOM := SafeNum(newBobDenom, 7500)
     IniWrite newBobDenom, R_IniFile, "Debug", "BobDenom"
     if (newRepURL != "") {
@@ -3102,6 +3109,7 @@ SaveManualBobDebug(newJson, newWH, newBobDenom, newRepURL := "") {
     global jsonURL, webhookHWID, MB_IniFile, MB_BOB_DENOM, reportURL, globalIniFile
     jsonURL      := newJson
     webhookHWID  := newWH
+    IniWrite webhookHWID, globalIniFile, "Global", "WebhookHWID"
     MB_BOB_DENOM := SafeNum(newBobDenom, 7500)
     IniWrite newBobDenom, MB_IniFile, "Debug", "BobDenom"
     if (newRepURL != "") {
@@ -3432,6 +3440,7 @@ SaveCritGloveDebug(newJson, newWH, newRepURL := "") {
     global jsonURL, webhookHWID, reportURL, globalIniFile
     jsonURL     := newJson
     webhookHWID := newWH
+    IniWrite webhookHWID, globalIniFile, "Global", "WebhookHWID"
     if (newRepURL != "") {
         reportURL := RTrim(newRepURL, "/")
         IniWrite reportURL, globalIniFile, "Panel", "ReportURL"
