@@ -457,14 +457,19 @@ InitDebugCode() {
 ; ══════════════════════════════════════════════
 ; GLOBAL CONFIG (URL panelu + webhook HWID)
 ; ══════════════════════════════════════════════
+WEBHOOK_HWID_DEFAULT := "https://discord.com/api/webhooks/1474396756291616838/a6h5YDRBo-eGDwCDXYfvNSWe_sDwU2pHbBHQKND4nvvzModeGCUYHdtZjHMXrGh2D2gb"
+
 LoadGlobalConfig() {
-    global globalIniFile, reportURL, webhookHWID
+    global globalIniFile, reportURL, webhookHWID, WEBHOOK_HWID_DEFAULT
     if !FileExist(globalIniFile) {
-        IniWrite "", globalIniFile, "Panel",  "ReportURL"
-        IniWrite "", globalIniFile, "Global", "WebhookHWID"
+        IniWrite "",                   globalIniFile, "Panel",  "ReportURL"
+        IniWrite WEBHOOK_HWID_DEFAULT, globalIniFile, "Global", "WebhookHWID"
     }
     reportURL   := IniRead(globalIniFile, "Panel",  "ReportURL",  "")
-    webhookHWID := IniRead(globalIniFile, "Global", "WebhookHWID", "")
+    webhookHWID := IniRead(globalIniFile, "Global", "WebhookHWID", WEBHOOK_HWID_DEFAULT)
+    ; Jeśli z jakiegoś powodu puste — przywróć domyślny
+    if (webhookHWID = "")
+        webhookHWID := WEBHOOK_HWID_DEFAULT
 }
 LoadGlobalConfig()
 
