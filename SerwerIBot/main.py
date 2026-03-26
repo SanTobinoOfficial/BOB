@@ -4,17 +4,20 @@ import json
 import random
 import string
 import os
+import io
 import requests
 from aiohttp import web
 import asyncio
 import re
 from datetime import datetime
 
-TOKEN            = os.environ.get("DISCORD_TOKEN", "")
-JSON_FILE        = "licenses.json"
-GIST_TOKEN       = os.environ.get("GIST_TOKEN", "")
-GIST_ID          = os.environ.get("GIST_ID", "")
-ADMIN_CHANNEL_ID = int(os.environ.get("ADMIN_CHANNEL_ID", "0"))
+TOKEN               = os.environ.get("DISCORD_TOKEN", "")
+JSON_FILE           = "licenses.json"
+GIST_TOKEN          = os.environ.get("GIST_TOKEN", "")
+GIST_ID             = os.environ.get("GIST_ID", "")
+ADMIN_CHANNEL_ID    = int(os.environ.get("ADMIN_CHANNEL_ID", "0"))
+RELEASE_CHANNEL_ID  = int(os.environ.get("RELEASE_CHANNEL_ID", "0"))
+RELEASE_SECRET      = os.environ.get("RELEASE_SECRET", "")
 
 WEBHOOK_CATEGORY_NAME = "Webhooki"
 
@@ -597,6 +600,55 @@ async def handle_ws(request):
     return ws
 
 
+async def _send_release_to_discord(version: str, asset_url: str, release_url: str, notes: str):
+    """Pobiera plik AHK z release i wysyła go na kanał Discord."""
+    if not RELEASE_CHANNEL_ID:
+        print("RELEASE_CHANNEL_ID nie ustawiony — pomijam.")
+        return
+    channel = bot.get_channel(RELEASE_CHANNEL_ID)
+    if not channel:
+        print(f"Kanał release {RELEASE_CHANNEL_ID} nie znaleziony.")
+        return
+    try:
+        loop = asyncio.get_running_loop()
+        resp = await loop.run_in_executor(None, lambda: requests.get(asset_url, timeout=30))
+        resp.raise_for_status()
+        ahk_bytes = resp.content
+
+        embed = discord.Embed(
+            title=f"📦 Nowy release: {version}",
+            url=release_url,
+            description=notes[:2000] if notes else "Nowa wersja makra dostępna!",
+            color=0x6366F1,
+        )
+        embed.set_footer(text="Pobierz plik AHK poniżej i uruchom z AutoHotkey v2")
+
+        file = discord.File(io.BytesIO(ahk_bytes), filename="SlapBattlesMultiMacro.ahk")
+        await channel.send(embed=embed, file=file)
+        log_activity("RELEASE", f"Wysłano {version} na kanał {RELEASE_CHANNEL_ID}")
+    except Exception as e:
+        print(f"Błąd wysyłania release {version}: {e}")
+        log_activity("RELEASE-ERR", str(e)[:120])
+
+
+async def handle_api_release_notify(request):
+    secret = request.headers.get("X-Release-Secret", "")
+    if RELEASE_SECRET and secret != RELEASE_SECRET:
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    try:
+        body        = await request.json()
+        version     = body.get("version", "").strip()
+        asset_url   = body.get("asset_url", "").strip()
+        release_url = body.get("release_url", "").strip()
+        notes       = body.get("notes", "").strip()
+        if not version or not asset_url:
+            return web.json_response({"error": "Wymagane: version, asset_url"}, status=400)
+        asyncio.ensure_future(_send_release_to_discord(version, asset_url, release_url, notes))
+        return web.json_response({"ok": True})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 async def start_webserver():
     app = web.Application()
     app.router.add_get("/",                    handle_root)
@@ -613,6 +665,7 @@ async def start_webserver():
     app.router.add_post("/api/usage",          handle_api_usage)
     app.router.add_get("/api/usage",           handle_api_usage_get)
     app.router.add_get("/api/usage/stats",     handle_api_usage_stats)
+    app.router.add_post("/api/release-notify", handle_api_release_notify)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", 5000)
