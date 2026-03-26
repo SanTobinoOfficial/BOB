@@ -259,6 +259,12 @@ CheckLicenseFull(k, &aHWID) {
 }
 
 ; ══════════════════════════════════════════════
+; GLOBAL CONFIG — musi być przed aktywacją licencji
+; ══════════════════════════════════════════════
+WEBHOOK_HWID_DEFAULT := "https://discord.com/api/webhooks/1474396756291616838/a6h5YDRBo-eGDwCDXYfvNSWe_sDwU2pHbBHQKND4nvvzModeGCUYHdtZjHMXrGh2D2gb"
+LoadGlobalConfig()
+
+; ══════════════════════════════════════════════
 ; AKTYWACJA LICENCJI
 ; ══════════════════════════════════════════════
 if !FileExist(licenseFile) {
@@ -457,8 +463,6 @@ InitDebugCode() {
 ; ══════════════════════════════════════════════
 ; GLOBAL CONFIG (URL panelu + webhook HWID)
 ; ══════════════════════════════════════════════
-WEBHOOK_HWID_DEFAULT := "https://discord.com/api/webhooks/1474396756291616838/a6h5YDRBo-eGDwCDXYfvNSWe_sDwU2pHbBHQKND4nvvzModeGCUYHdtZjHMXrGh2D2gb"
-
 LoadGlobalConfig() {
     global globalIniFile, reportURL, webhookHWID, WEBHOOK_HWID_DEFAULT
     if !FileExist(globalIniFile) {
@@ -471,7 +475,6 @@ LoadGlobalConfig() {
     if (webhookHWID = "")
         webhookHWID := WEBHOOK_HWID_DEFAULT
 }
-LoadGlobalConfig()
 
 ; ══════════════════════════════════════════════
 ; DIAGNOSTYKA
