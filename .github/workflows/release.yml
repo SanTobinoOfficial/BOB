@@ -66,6 +66,7 @@ jobs:
           fi
 
       - name: Przygotuj notatki release
+        id: notes
         run: |
           ver="${{ steps.version.outputs.VERSION }}"
           custom="${{ github.event.inputs.release_notes }}"
@@ -86,9 +87,13 @@ jobs:
           - AutoHotkey v2.0+
           - Roblox uruchomiony przed startem makra
           NOTES
-            # Add version header at top
             printf "## Slap Battles Multi Macro $ver\n\n$(cat release_notes.md)" > release_notes.md
           fi
+          # Wyeksportuj skrócone notatki do zmiennej (max 1800 znaków dla Discorda)
+          SHORT_NOTES=$(head -c 1800 release_notes.md)
+          echo "SHORT_NOTES<<EOF" >> $GITHUB_OUTPUT
+          echo "$SHORT_NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Utwórz Release i wgraj plik AHK
         env:
@@ -109,3 +114,28 @@ jobs:
               --title "Slap Battles Multi Macro $ver" \
               --notes-file "release_notes.md"
           fi
+
+      - name: Powiadom bota o nowym release
+        if: vars.REPLIT_URL != ''
+        env:
+          REPLIT_URL: ${{ vars.REPLIT_URL }}
+          RELEASE_SECRET: ${{ secrets.RELEASE_SECRET }}
+        run: |
+          ver="${{ steps.version.outputs.VERSION }}"
+          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${ver}/SlapBattlesMultiMacro.ahk"
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${ver}"
+          NOTES="${{ steps.notes.outputs.SHORT_NOTES }}"
+
+          JSON=$(jq -n \
+            --arg version "$ver" \
+            --arg asset_url "$ASSET_URL" \
+            --arg release_url "$RELEASE_URL" \
+            --arg notes "$NOTES" \
+            '{version: $version, asset_url: $asset_url, release_url: $release_url, notes: $notes}')
+
+          curl -sf -X POST "${REPLIT_URL}/api/release-notify" \
+            -H "Content-Type: application/json" \
+            -H "X-Release-Secret: ${RELEASE_SECRET}" \
+            -d "$JSON" \
+            && echo "Bot powiadomiony." \
+            || echo "Powiadomienie bota nieudane (nie krytyczne)."
