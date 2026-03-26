@@ -9,7 +9,7 @@
 ; STAŁE APLIKACJI
 ; ══════════════════════════════════════════════
 global APP_NAME    := "Slap Battles Multi Macro"
-global APP_VERSION := "v1.4.2"
+global APP_VERSION := "v1.4.3"
 
 global licenseFile := A_AppData "\SBMM\license.dat"
 global jsonURL     := "https://gist.githubusercontent.com/SanTobinoOfficial/4700f4452a52144b6e3922501b55dcf1/raw/licenses.json"
